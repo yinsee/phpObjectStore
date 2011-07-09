@@ -4,7 +4,7 @@ test script for phpObjectStore
 */
 require("class.objectstore.php");
 
-$db = new ObjectStore('mystore');
+$db = new ObjectStore('mystore', array('gzip'=>9));
 // test drop
 $db->products->drop();
 

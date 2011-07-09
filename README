@@ -23,7 +23,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 1) How to use
 <?
 require("class.ObjectStore.php");
-$db = new ObjectStore('name');
+// $options is optional parameter
+$options = array('gzip'=>9, 'autosave'=>true, 'dir'=>'/var/lib/phpobjstore/');
+$db = new ObjectStore('name', $options);
 ...
 ...
 ?>
@@ -54,9 +56,3 @@ $db->table->set($id, array $newdata);
 $result = $db->table->find($id) or (array $search_keys);
 $db->table->delete($id);
 
-
-
-
-2) Changing the database folder
-To change the folder for your data, simply replace this line with your own setting.
-define('OBJECT_STORE_DB_FOLDER', dirname(__file__).'/db/');

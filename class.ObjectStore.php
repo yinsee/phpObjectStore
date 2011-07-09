@@ -21,29 +21,24 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-// define where to store the database
-define('OBJECT_STORE_DB_FOLDER', dirname(__file__).'/db/');
-
-// try to create folder for database
-if (!is_dir(OBJECT_STORE_DB_FOLDER)) 
-{
-	if (!@mkdir(OBJECT_STORE_DB_FOLDER))
-	{
-		die("Please create database folder at ".OBJECT_STORE_DB_FOLDER." with permission 0777");
-	}
-}
 
 class ObjectStore {
-	// store the data
-	var $data = array();
-	// store the unique keys
-	var $unique_keys = array('id');
-	// whether we should auto save upon update / set (more file access, possible performance issue?)
-	var $autosave = false;
 	// objectstore path for internal reference
 	private $path;
-	
-	function __construct($name, ObjectStore $parent=NULL)
+	// store the data
+	private $data = array();
+	// store the unique keys
+	private $unique_keys = array('id');
+	// whether we should auto save upon update / set (more file access, possible performance issue?)
+	private $autosave = false;
+	// use compression for saving (set level 1-9, 0 for no compression)
+	private $gzip = 0;
+	// where to store the files
+	private $dir;
+	// store the options to pass on 
+	private $options;
+
+	function __construct($name, array $options=null, ObjectStore $parent=null)
 	{
 		if (empty($name)) {
 			trigger_error(__class__."(\$name) is required");
@@ -55,10 +50,37 @@ class ObjectStore {
 		else
 			$this->path = $name;
 		
-		// load data if found
-		if (file_exists(OBJECT_STORE_DB_FOLDER.$this->path))
+		// process options
+		$this->options = $options;
+		if (isset($options['gzip'])) $this->gzip = $options['gzip'];
+		if (isset($options['autosave'])) $this->autosave = $options['autosave'];
+		// define where to store the database
+		if (isset($options['dir'])) 
 		{
-			$this->data = unserialize(file_get_contents(OBJECT_STORE_DB_FOLDER.$this->path));
+			$this->dir = $options['dir'].'/';
+			$this->dir = str_replace('//','/',$this->dir);
+		}
+		else
+		{
+			$this->dir = dirname(__file__).'/db/';
+		}
+
+		// try to create folder for database
+		if (!is_dir($this->dir)) 
+		{
+			if (!@mkdir($this->dir))
+			{
+				die("Please create database folder at ".$this->dir." with permission 0777");
+			}
+		}
+
+		
+		// load data if found
+		if (file_exists($this->dir.$this->path))
+		{
+			$data_raw = file_get_contents($this->dir.$this->path);
+			if ($this->gzip) $data_raw = gzuncompress($data_raw);
+			$this->data = unserialize($data_raw);
 		}
 	}
 	
@@ -66,7 +88,7 @@ class ObjectStore {
 	{
 		if (!isset($this->$prop))
 		{
-			$this->$prop = new ObjectStore($prop, $this);
+			$this->$prop = new ObjectStore($prop, $this->options, $this);
 		}
 		return $this->$prop;
 	}
@@ -79,7 +101,7 @@ class ObjectStore {
 	// clear all and remove the data file
 	function drop()
 	{
-		@unlink(OBJECT_STORE_DB_FOLDER.$this->path);
+		@unlink($this->dir.$this->path);
 		unset($this->data);
 		unset($this->unique_keys);	
 		$this->data = array();
@@ -98,7 +120,9 @@ class ObjectStore {
 		if (empty($this->path)) return;
 		
 		// save $data to file as serialized
-		file_put_contents(OBJECT_STORE_DB_FOLDER.$this->path, serialize($this->data));
+		$data_raw = serialize($this->data);
+		if ($this->gzip) $data_raw = gzcompress($data_raw, $this->gzip);
+		file_put_contents($this->dir.$this->path, $data_raw);
 	}
 	
 	private function _new_id()
