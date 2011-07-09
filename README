@@ -43,7 +43,7 @@ $db->set($id, array $newdata);
 
 Find:
 $result = $db->find($id) or (array $search_keys);
-* $search_keys value is based on PHP preg_search
+* $search_keys supports PHP preg_search, eg: array($brand => new Regexp('/apple|dell/i'));
 
 Delete:
 $db->delete($id);

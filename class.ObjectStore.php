@@ -170,7 +170,6 @@ class ObjectStore {
 	// sort by $sort field
 	// only return first entry if $multple=false
 	// todo: sort
-	// todo: regex search
 	function find($id_or_keys, $multiple = true, $sort = false)
 	{
 		if (!is_array($id_or_keys))
@@ -191,9 +190,25 @@ class ObjectStore {
 				foreach($id_or_keys as $k=>$v)
 				{
 					// compare each key-value, if not match then break with match=false
-					if (!isset($row[$k]) || $row[$k]!=$v) {
+					// no value
+					if (!isset($row[$k])) {
 						$match = false;
 						break;
+					}
+					// regexp not match
+					if (is_a($v, 'Regexp'))
+					{
+					 	if (!preg_match($v,$row[$k]))
+					 	{
+						 	$match = false;
+						 	break;
+					 	}
+					}
+					// string not match
+					elseif ($row[$k]!=$v) 
+					{
+					 	$match = false;
+					 	break;
 					}
 				}
 				// if matched, store to $return
@@ -212,6 +227,20 @@ class ObjectStore {
 	{
 		unset($this->data[$id]);
 		if ($this->autosave) $this->_save();
+	}
+}
+
+class Regexp
+{
+	var $regexp;
+	function __construct($str)
+	{
+		$this->regexp = $str;
+	}
+	
+	function __toString()
+	{
+		return $this->regexp;
 	}
 }
 ?>	

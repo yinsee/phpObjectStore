@@ -12,7 +12,7 @@ $db->products->drop();
 print "<h1>Test Insert and Update</h1>";
 $db->products->insert(array('brand'=>'Dell', 'model'=>'Inspiron 15', 'specs'=>array('resolution'=>'1680x1050', 'weight'=>4.5, 'size'=>15)));
 $acer = $db->products->insert(array('brand'=>'Acer', 'model'=>'Timeline 840', 'specs'=>array('resolution'=>'1024x600', 'weight'=>1.5, 'size'=>11)));
-$db->products->insert(array('brand'=>'Dell', 'model'=>'Latitude X', 'specs'=>array('resolution'=>'1440x900', 'weight'=>1.5, 'size'=>13)));
+$db->products->insert(array('brand'=>'Dell', 'model'=>'Latitude Xinclair', 'specs'=>array('resolution'=>'1440x900', 'weight'=>1.5, 'size'=>13)));
 $macair = $db->products->insert(array('brand'=>'Apple', 'model'=>'Macbook Air 11"', 'specs'=>array('resolution'=>'1440x900', 'weight'=>1.2, 'size'=>11)));
 $db->products->update($macair, array('options'=>array('256GB SSD', '4GB Ram')));
 print "<pre>";
@@ -32,6 +32,12 @@ $res = $db->products->find(array('brand'=>'Dell'));
 print "<pre>";
 print_r($res);
 print "</pre>";		
+print "<h1>Test Find with Regexp /air/i</h1>";
+$res = $db->products->find(array('model'=>new Regexp('/air/i')));
+print "<pre>";
+print_r($res);
+print "</pre>";		
+
 
 
 // test delete
