@@ -1,17 +1,43 @@
 <?
+/*
+test script for phpObjectStore
+*/
 require("class.objectstore.php");
-error_reporting(E_ALL);
-ini_set('display_errors',1);
 
-$a = new ObjectStore();
-$a->b3->drop();
-$id = $a->b3->insert(array('test'=>999, 'z'=>array('ab'=>'cd', 'ef'=>'fg')));
-$id = $a->b3->insert(array('test'=>123, 'b'=>array('c'=>'d', 'e'=>'f')));
-$a->b3->update($id, array('test'=>1234, 'b'=>array('g'=>'h')));
+$db = new ObjectStore('mystore');
+// test drop
+$db->products->drop();
 
+// test insert
+print "<h1>Test Insert and Update</h1>";
+$db->products->insert(array('brand'=>'Dell', 'model'=>'Inspiron 15', 'specs'=>array('resolution'=>'1680x1050', 'weight'=>4.5, 'size'=>15)));
+$acer = $db->products->insert(array('brand'=>'Acer', 'model'=>'Timeline 840', 'specs'=>array('resolution'=>'1024x600', 'weight'=>1.5, 'size'=>11)));
+$db->products->insert(array('brand'=>'Dell', 'model'=>'Latitude X', 'specs'=>array('resolution'=>'1440x900', 'weight'=>1.5, 'size'=>13)));
+$macair = $db->products->insert(array('brand'=>'Apple', 'model'=>'Macbook Air 11"', 'specs'=>array('resolution'=>'1440x900', 'weight'=>1.2, 'size'=>11)));
+$db->products->update($macair, array('options'=>array('256GB SSD', '4GB Ram')));
 print "<pre>";
-print_r($a);
+print_r($db->products);
 print "</pre>";
 
-		
+// test set
+print "<h1>Test Set</h1>";
+$db->products->set($acer, array('brand'=>'Acer', 'model'=>'Timeline 360', 'specs'=>array('resolution'=>'1024x600', 'weight'=>1.5, 'size'=>11)));
+print "<pre>";
+print_r($db->products->find($acer));
+print "</pre>";
+
+// test find
+print "<h1>Test Find</h1>";
+$res = $db->products->find(array('brand'=>'Dell'));
+print "<pre>";
+print_r($res);
+print "</pre>";		
+
+
+// test delete
+print "<h1>Test Delete</h1>";
+$db->products->delete($macair);
+print "<pre>";
+print_r($db->products);
+print "</pre>";		
 ?>
